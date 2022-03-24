@@ -1,0 +1,241 @@
+package City.Entities.Concrete;
+import java.util.*;
+
+public class LDLinkedList<E> extends AbstractList<E> implements List<E> {
+
+    private Node head;
+    private int size = 0;
+    private static LDLinkedList removed = new LDLinkedList();
+
+    public LDLinkedList() {
+
+    }
+
+    private void addFirst(E element){
+        head =  new Node<E>(element,head);
+        ++size;
+    }
+
+
+    private void addAfter(E element, Node<E> node){
+        node.next = new Node<E>(element,node.next);
+        ++size;
+    }
+
+    private E removeAfter(Node<E> node) {
+        Node<E> temp = node.next;
+        if (temp != null) {
+            node.next = temp.next;
+            size--;
+            addNodetoRemoved(temp);
+            return temp.data;
+        }
+        return null;
+    }
+
+    private void addNodetoRemoved(Node<E> node){
+        if(removed.head == null){
+            removed.head = node;
+        }
+        else{
+            removed.getNode(removed.size-1).next = node;
+        }
+        ++removed.size;
+
+
+
+
+    }
+
+    private E removeFirst(){
+        Node<E> temp = head;
+        if (head != null){
+            head = head.next;
+        }
+        // Return data at old head or null if list is empty
+        if (temp != null) {
+            size--;
+            addNodetoRemoved(temp);
+
+
+            return temp.data;
+        }
+        return null;
+    }
+
+    private Node<E> getNode(int index){
+        Node<E> iter = head;
+
+        for(int i = 0;  i< index && iter != null ; ++i){
+            iter = iter.next;
+        }
+
+        return  iter;
+    }
+
+
+    public E removee(E element){
+
+        if(head.data.equals(element)){
+
+            return  removeFirst();
+        }
+        else{
+
+
+            return removeAfter(getNode(indexOf(element) - 1));
+        }
+    }
+
+
+
+    public E set(int index, E element){
+
+        if(index>= size){
+            throw new IndexOutOfBoundsException("Invalid Index");
+        }
+        Node<E> edited = getNode(index);
+        edited.data = element;
+        return edited.data;
+    }
+
+    @Override
+    public E get(int index) {
+        if(index >= size){
+
+            throw new IndexOutOfBoundsException("Invalid Index");
+        }
+        Node<E> get = getNode(index);
+
+        return  get.data;
+    }
+
+
+    private boolean link(E element){
+        Node<E> temp;
+        int index = removed.indexOf(element);
+
+
+        if(index == -1) return  false;
+
+        else if(index == 0){
+            temp = removed.head;
+            removed.head = removed.head.next;
+            getNode(size-1).next = temp;
+            temp.next = null;
+            --removed.size;
+            ++size;
+            return true;
+        }
+        else{
+            temp = removed.getNode(index-1);
+            Node<E> finded = temp.next;
+            temp.next = temp.next.next;
+            --removed.size;
+            getNode(size-1).next= finded;
+            finded.next =null;
+            ++size;
+            return true;
+        }
+    }
+
+    @Override
+    public  boolean add(E element){
+        if(head == null){
+            if(link(element)){
+
+            }
+            else{
+
+                addFirst(element);
+            }
+
+        }
+        else {
+             if(link(element)) {
+
+            } else {
+
+                Node<E> last = getNode(size - 1);
+                addAfter(element, last);
+
+             }
+        }
+        return  true;
+    }
+
+
+
+    public int indexOf(Object element){
+        Node<E> iter  =head;
+        for(int i = 0 ; i < size ; ++i){
+
+            if(iter.data.equals(element)){
+
+                return  i;
+            }
+                iter  = iter.next;
+        }
+        return  -1;
+    }
+
+
+    public int size(){
+        return  size;
+    }
+
+
+    private  static class Node<E>{
+        Node next;
+        E data;
+        Node(E element){
+            data =element;
+            next =null;
+        }
+        Node(E element, Node inserted){
+            data = element;
+            next = inserted;
+        }
+
+    }
+
+    private class LdIterator<E> implements java.util.Iterator<E>{
+        Node<E> iter = head;
+
+        @Override
+        public void remove(){
+
+        }
+
+        @Override
+        public boolean hasNext() {
+
+            if(iter.next != null){
+                return true;
+            }
+            else{
+                return  false;
+            }
+
+        }
+
+        @Override
+        public E next() {
+            if(iter == null){
+                throw new  NullPointerException("List is empty");
+            }
+            else{
+                iter = iter.next;
+                return  iter.data;
+            }
+        }
+    }
+
+
+    @Override
+    public Iterator<E> iterator(){
+        return new LdIterator<E>();
+    }
+
+
+}
